@@ -2,28 +2,16 @@
 This module is for the dataset class that is used in the project.
 """
 
-from dataclasses import dataclass
 from os import listdir, path
-from typing import List
+from typing import Dict
 
 from PIL import Image
 from torch.utils.data import Dataset
 
+from torch import tensor
+from torchvision import transforms
 
-@dataclass
-class Annotation:
-    class_id: int
-    x_center: float
-    y_center: float
-    width: float
-    height: float
-
-
-@dataclass
-class DataSample:
-    image: Image.Image
-    annotations: List[Annotation]
-
+to_tensor = transforms.ToTensor()
 
 class PoleDataset(Dataset):
     def __init__(self, images_dir: str, labels_dir: str):
@@ -39,9 +27,11 @@ class PoleDataset(Dataset):
         """Returns the total number of samples."""
         return len(self.image_files)
 
-    def __getitem__(self, idx) -> DataSample:
+    def __getitem__(self, idx) -> Dict[str, tensor]:
         img_path = path.join(self.images_dir, self.image_files[idx])
         image = Image.open(img_path).convert("RGB")
+        image_tensor = to_tensor(image)  # Convert the image to a tensor
+
         label_path = path.join(self.labels_dir, self.label_files[idx])
         annotations = []
         if path.exists(label_path):
@@ -50,8 +40,10 @@ class PoleDataset(Dataset):
                     parts = line.strip().split()
                     class_id = int(parts[0])
                     x_center, y_center, width, height = map(float, parts[1:])
-                    annotations.append(
-                        Annotation(class_id, x_center, y_center, width, height)
-                    )
+                    annotations.append([class_id, x_center, y_center, width, height])
 
-        return DataSample(image, annotations)
+        return {
+            'image': image_tensor,
+            'annotations': tensor(annotations) 
+        }
+
