@@ -1,27 +1,28 @@
+from ultralytics import YOLO
 
-print('Hello, World!')
-from model import PoleDataset
-from dotenv import load_dotenv
-from os import getenv
-from torch.utils.data import DataLoader
-from utils import collate_fn, get_device
+from utils import get_device
 
-load_dotenv()
+device = get_device()
 
-if __name__ == '__main__':
-    device = get_device()
+model = YOLO("yolov9c.pt")
 
-    path_to_train_images: str = getenv('PATH_TO_TRAIN_DATA')
-    path_to_val_images: str = getenv('PATH_TO_VAL_DATA')
+model.info()
 
-    train_dataset = PoleDataset(
-        path_to_train_images + '/images',
-        path_to_train_images + '/labels',
-    )
-    val_dataset = PoleDataset(
-        path_to_val_images + '/images',
-        path_to_val_images + '/labels',
-    )
+train_params = {
+    "data": "./data.yaml",
+    "epochs": 100,
+    "imgsz": (1024, 128),  # (width, height)
+    "plots": True,  # plot results.txt as results.png
+    "workers": 4,  # workers are used for loading data
+    "batch": 16,
+    "rect": True,  # rectangular training (keep aspect ratio)
+    "patience": 50,  # early stopping patience
+}
 
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
+results = model.train(**train_params)
+
+print(results)
+
+model.save("yolov9c_trained.pt")
+
+print("Done training")
