@@ -1,0 +1,4 @@
+train: /cluster/projects/vc/data/ad/open/Poles/train
+val: /cluster/projects/vc/data/ad/open/Poles/test
+nc: 1
+names: ["pole"]
