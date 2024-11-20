@@ -1,114 +1,81 @@
-import optuna
 from ultralytics import YOLO
 
 from utils import get_device
 
-# Base training parameters (shared by all runs)
-BASE_TRAIN_PARAMS = {
-    "data": "./data.yaml",  # Path to your dataset config
-    "imgsz": (1024, 128),  # Input image size (width, height)
-    "plots": False,  # Disable plots for faster trials
-    "workers": 8,  # Number of dataloader workers
-    "rect": True,  # Rectangular training
-    "patience": 20,  # Early stopping patience
-    "optimizer": "AdamW",  # Optimizer type
+# Device configuration
+device = get_device()
+
+# Load the YOLO model
+model = YOLO("yolov9s.pt")
+model.info()
+
+# Define training parameters
+train_params = {
+    "data": "./data.yaml",  # Path to your dataset configuration
+    "imgsz": (1024, 128),  # Image size (width, height)
+    "plots": True,  # Enable result plotting
+    "workers": 8,  # Number of data loading workers
+    "batch": 16,  # Batch size
+    "rect": True,  # Rectangular training (maintain aspect ratio)
+    "patience": 10,  # Early stopping patience
+    "project": "pole_detection",  # Project name for saving results
 }
 
-# Augmentation parameters (shared defaults)
-BASE_AUGMENT_PARAMS = {
-    "augment": True,  # Enable augmentations
+# Define initial hyperparameters
+hyper_params = {
+    "epochs": 50,  # Number of training epochs
+    "optimizer": "AdamW",  # Optimizer choice
+    "lr0": 0.01,  # Initial learning rate
+    "lrf": 0.0001,  # Final learning rate
+    "momentum": 0.937,  # Momentum
+    "warmup_epochs": 5,  # Number of warmup epochs
+    "dropout": 0.1,  # Dropout rate
 }
 
+# Define augmentation parameters
+augmentation_params = {
+    "augment": True,  # Enable data augmentation
+    "hsv_h": 0.015,  # HSV-Hue augmentation
+    "hsv_s": 0.7,  # HSV-Saturation augmentation
+    "hsv_v": 0.4,  # HSV-Value augmentation
+    "degrees": 0.0,  # Rotation augmentation
+    "translate": 0.1,  # Translation augmentation
+    "scale": 0.5,  # Scale augmentation
+    "shear": 0.0,  # Shear augmentation
+    "perspective": 0.0,  # Perspective augmentation
+    "flipud": 0.0,  # Vertical flip augmentation
+    "fliplr": 0.5,  # Horizontal flip augmentation
+    "mosaic": 1.0,  # Mosaic augmentation
+    "mixup": 0.0,  # Mixup augmentation
+    "copy_paste": 0.0,  # Copy-paste augmentation
+    "erasing": 0.0,  # Random erasing augmentation
+    "crop_fraction": 0.5,  # Crop fraction
+}
 
-# Objective function for Optuna
-def objective(trial):
-    device = get_device()
+# Combine all parameters
+train_params.update(hyper_params)
+train_params.update(augmentation_params)
 
-    # Sample hyperparameters
-    hyper_params = {
-        "lr0": trial.suggest_float(
-            "lr0", 1e-5, 1e-1, log=True
-        ),  # Initial learning rate
-        "lrf": trial.suggest_float(
-            "lrf", 1e-5, 1e-2, log=True
-        ),  # Final learning rate fraction
-        "momentum": trial.suggest_float("momentum", 0.8, 0.99),  # Momentum
-        "dropout": trial.suggest_float("dropout", 0.0, 0.5),  # Dropout rate
-        "epochs": trial.suggest_int("epochs", 50, 300, step=50),  # Number of epochs
-        "batch": trial.suggest_int("batch", 8, 64, step=8),  # Batch size
-    }
+# Perform hyperparameter tuning
+# https://docs.ultralytics.com/guides/hyperparameter-tuning/#repeat
+tuning_results = model.tune(
+    **train_params,
+    iterations=300,  # Number of tuning iterations
+    save=True,  # Disable saving intermediate models
+    val=False,  # Disable validation during tuning
+)
 
-    # Sample augmentation parameters
-    augment_params = {
-        "translate": trial.suggest_float("translate", 0.0, 0.2),  # Translation
-        "scale": trial.suggest_float("scale", 0.1, 1.0),  # Scaling
-        "flipud": trial.suggest_float("flipud", 0.0, 0.5),  # Vertical flip probability
-        "fliplr": trial.suggest_float("fliplr", 0.0, 0.5),
-    }
+# Train the model with the best hyperparameters found
+best_hyperparams = tuning_results["best_hyperparameters"]
+train_params.update(best_hyperparams)
 
-    # Combine all parameters
-    params = {
-        **BASE_TRAIN_PARAMS,
-        **hyper_params,
-        **BASE_AUGMENT_PARAMS,
-        **augment_params,
-    }
+train_params["epochs"] = 100  # Increase the number of epochs
+train_params["val"] = True
 
-    # Initialize and train the YOLO model
-    model = YOLO("yolov9c.pt")  # Path to your YOLO model
-    results = model.train(**params)
+# Perform training
+results = model.train(**train_params)
 
-    # Return validation loss as the objective metric
-    val_loss = results.box_loss  # Use `box_loss` as an example metric
-    return val_loss
+# Save the trained model
+model.save("yolo_trained.pt")
 
-
-# Run Optuna optimization
-def run_optimization():
-    # Create a study for minimizing validation loss
-    study = optuna.create_study(direction="minimize")
-
-    # Optimize the objective function
-    study.optimize(
-        objective, n_trials=20, timeout=3600
-    )  # Run 20 trials or stop after 1 hour
-
-    # Print the best hyperparameters
-    print("Best trial:")
-    trial = study.best_trial
-    print(f"  Value: {trial.value}")
-    print("  Params: ")
-    for key, value in trial.params.items():
-        print(f"    {key}: {value}")
-
-    return study
-
-
-# Train final model with the best hyperparameters
-def train_final_model(study):
-    # Extract best hyperparameters
-    best_hyper_params = study.best_params
-
-    # Final training parameters
-    final_params = {**BASE_TRAIN_PARAMS, **BASE_AUGMENT_PARAMS, **best_hyper_params}
-
-    # Enable plots for final training
-    final_params["plots"] = True
-    final_params["name"] = "best_model"  # Name for the final model
-    final_params["project"] = "pole_detection_final"
-
-    # Initialize and train the YOLO model
-    model = YOLO("yolov9c.pt")  # Path to your YOLO model
-    results = model.train(**final_params)
-
-    # Save the trained model
-    model.save("yolov9c_trained_optimized.pt")
-    print("Final model training completed and saved as 'yolov9c_trained_optimized.pt'")
-
-
-if __name__ == "__main__":
-    # Run Optuna optimization
-    study = run_optimization()
-
-    # Train the final model with the best hyperparameters
-    train_final_model(study)
+print("Training completed successfully.")
