@@ -6,8 +6,8 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --gres=gpu:a100:4
 #SBATCH --constraint="gpu40g|gpu80g|gpu32g"
-#SBATCH --job-name="tdt17-obj-detection"
-#SBATCH --output=tdt17-obj-detection-logs.out
+#SBATCH --job-name="tdt17-optuna-obj-detection"
+#SBATCH --output=tdt17-optuna-obj-detection-logs.out
 #SBATCH --mem=32G
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/cluster/apps/eb/software/Python/3.10.4-GCCcore-11.3.0/lib/
@@ -34,7 +34,7 @@ pip install --upgrade pip
 pip install python-dotenv
 pip install --force-reinstall torch -U
 pip install torchvision torchaudio
-pip install ultralytics 
+pip install ultralytics optuna
 
 # Mixing expandable_segments:True with max_split_size doesn't make sense because the expandable segment is the size of RAM and so it could never be split with max_split_size.
 # export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True,max_split_size_mb:128"

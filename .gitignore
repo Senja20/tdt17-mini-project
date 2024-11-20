@@ -7,3 +7,5 @@ runs/
 /runs/*
 *.out
 *.pt
+/pole_detection_optuna/
+pole_detection
