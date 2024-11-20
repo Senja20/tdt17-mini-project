@@ -9,27 +9,25 @@ device = get_device()
 model = YOLO("yolov9s.pt")
 model.info()
 
-# Define training parameters
 train_params = {
-    "data": "./data.yaml",  # Path to your dataset configuration
-    "imgsz": (1024, 128),  # Image size (width, height)
-    "plots": True,  # Enable result plotting
-    "workers": 8,  # Number of data loading workers
-    "batch": 16,  # Batch size
-    "rect": True,  # Rectangular training (maintain aspect ratio)
-    "patience": 10,  # Early stopping patience
-    "project": "pole_detection",  # Project name for saving results
+    "data": "./data.yaml",
+    "imgsz": (1024, 128),
+    "plots": True,
+    "workers": 4,
+    "batch": 16,
+    "rect": True,
+    "patience": 10,
+    "project": "pole_detection",
 }
 
-# Define initial hyperparameters
 hyper_params = {
-    "epochs": 50,  # Number of training epochs
-    "optimizer": "AdamW",  # Optimizer choice
-    "lr0": 0.01,  # Initial learning rate
-    "lrf": 0.0001,  # Final learning rate
-    "momentum": 0.937,  # Momentum
-    "warmup_epochs": 5,  # Number of warmup epochs
-    "dropout": 0.1,  # Dropout rate
+    "epochs": 50,
+    "optimizer": "AdamW",
+    "lr0": 0.01,
+    "lrf": 0.0001,
+    "momentum": 0.937,
+    "warmup_epochs": 5,
+    "dropout": 0.1,
 }
 
 # Define augmentation parameters
