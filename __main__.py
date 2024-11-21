@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-from utils import get_device
+from utils import get_device, upload_yolo_to_huggingface
 
 # Device configuration
 device = get_device()
@@ -21,7 +21,7 @@ train_params = {
 }
 
 hyper_params = {
-    "epochs": 50,
+    "epochs": 1,
     "optimizer": "AdamW",
     "lr0": 0.01,
     "lrf": 0.0001,
@@ -58,13 +58,17 @@ train_params.update(augmentation_params)
 # https://docs.ultralytics.com/guides/hyperparameter-tuning/#repeat
 tuning_results = model.tune(
     **train_params,
-    iterations=300,  # Number of tuning iterations
+    iterations=1,  # Number of tuning iterations
     save=True,  # Disable saving intermediate models
     val=False,  # Disable validation during tuning
 )
 
 # Train the model with the best hyperparameters found
 best_hyperparams = tuning_results["best_hyperparameters"]
+
+print("Best hyperparameters found:")
+print(best_hyperparams)
+
 train_params.update(best_hyperparams)
 
 train_params["epochs"] = 100  # Increase the number of epochs
@@ -77,3 +81,11 @@ results = model.train(**train_params)
 model.save("yolo_trained.pt")
 
 print("Training completed successfully.")
+
+# Upload the trained model to Hugging Face
+upload_yolo_to_huggingface(
+    repo_name="tdt17_yolo_pole_detection",
+    model_path="yolo_trained.pt",
+    hf_token="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",
+    private=False,
+)
