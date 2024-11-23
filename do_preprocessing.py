@@ -30,9 +30,9 @@ def preprocess_dataset(input_dir, output_dir):
 # Input and output directories
 train_img_dir = PATH_train + '/images'
 val_img_dir = PATH_val + '/images'
-preprocessed_train_dir = '../Poles/train'
-preprocessed_val_dir = '../Poles/test'
+preprocessed_train_dir = '../Poles/train/images'
+preprocessed_val_dir = '../Poles/test/images'
 
 # Preprocess training and validation images
 preprocess_dataset(train_img_dir, preprocessed_train_dir)
-preprocess_dataset(val_img_dir, preprocessed_val_dir)
+# preprocess_dataset(val_img_dir, preprocessed_val_dir)
