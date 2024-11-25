@@ -1,3 +1,7 @@
+'''
+This script preprocesses the images in the training and validation datasets.
+'''
+
 import os
 import cv2
 from utils_functions.img_pre_processing import preprocess_image
@@ -35,4 +39,4 @@ preprocessed_val_dir = '../Poles/test/images'
 
 # Preprocess training and validation images
 preprocess_dataset(train_img_dir, preprocessed_train_dir)
-# preprocess_dataset(val_img_dir, preprocessed_val_dir)
+preprocess_dataset(val_img_dir, preprocessed_val_dir)
