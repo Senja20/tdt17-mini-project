@@ -1,4 +1,4 @@
-train: /cluster/projects/vc/data/ad/open/Poles/train
-val: /cluster/projects/vc/data/ad/open/Poles/test
+train: C:\Users\Yauhen\tdt17\data\Poles\train
+val: C:\Users\Yauhen\tdt17\data\Poles\test
 nc: 1
 names: ["pole"]

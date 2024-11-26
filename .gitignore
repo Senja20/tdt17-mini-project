@@ -9,3 +9,5 @@ runs/
 *.pt
 /pole_detection_optuna/
 pole_detection
+/data/
+*.onnx
