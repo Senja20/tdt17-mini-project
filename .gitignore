@@ -11,3 +11,4 @@ runs/
 pole_detection
 /data/
 *.onnx
+output_imgs/
