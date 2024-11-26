@@ -7,3 +7,4 @@ runs/
 /runs/*
 *.out
 *.pt
+output_imgs/
