@@ -1,0 +1,6 @@
+# path leads to the preprocessed data
+
+train: /cluster/home/tristanw/Poles/train
+val: /cluster/home/tristanw/Poles/test
+nc: 1
+names: ["pole"]
