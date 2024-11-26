@@ -6,5 +6,5 @@
 runs/
 /runs/*
 *.out
-*.pt
+/*.pt
 output_imgs/
