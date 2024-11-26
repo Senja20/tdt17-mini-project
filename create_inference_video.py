@@ -26,14 +26,14 @@ def load_model():
     if USE_SAHI:
         detection_model = AutoDetectionModel.from_pretrained(
             model_type="yolov8",  # SAHI uses 'yolov8' as the model type for YOLOv8 and above
-            model_path=f'runs/detect/{MODEL_VERSION}/weights/best.pt',
+            model_path=f'{MODEL_VERSION}/weights/best.pt',
             confidence_threshold=0.3,
             device='cuda',
         )
         print('---------> Model loaded')
         return detection_model
     else:
-        model = YOLO(f'runs/detect/{MODEL_VERSION}/weights/best.pt')
+        model = YOLO(f'{MODEL_VERSION}/weights/best.pt')
         print('---------> Model loaded')
         return model
 
