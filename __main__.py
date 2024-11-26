@@ -1,6 +1,6 @@
 from ultralytics import YOLO
 
-from utils import get_device
+from utils_functions import get_device
 
 # Device configuration
 device = get_device()
