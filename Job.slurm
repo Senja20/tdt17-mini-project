@@ -34,7 +34,7 @@ pip install --upgrade pip
 pip install python-dotenv
 pip install --force-reinstall torch -U
 pip install torchvision torchaudio
-pip install ultralytics 
+pip install ultralytics optuna
 
 # Mixing expandable_segments:True with max_split_size doesn't make sense because the expandable segment is the size of RAM and so it could never be split with max_split_size.
 # export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True,max_split_size_mb:128"

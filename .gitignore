@@ -7,4 +7,8 @@ runs/
 /runs/*
 *.out
 *.pt
+/pole_detection_optuna/
+pole_detection
+/data/
+*.onnx
 output_imgs/
