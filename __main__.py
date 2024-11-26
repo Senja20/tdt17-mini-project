@@ -1,53 +1,57 @@
 from ultralytics import YOLO
 
-from utils import get_device, upload_yolo_to_huggingface
+from utils import get_device
 
 # Device configuration
 device = get_device()
 
+print("Device:", device)
+
 # Load the YOLO model
-model = YOLO("yolov9s.pt")
+model = YOLO("yolo11s.yaml")
 model.info()
 
 train_params = {
     "data": "./data.yaml",
-    "imgsz": (1024, 128),
+    # "imgsz": (1024, 128),
+    "imgsz": 800,
     "plots": True,
     "workers": 4,
     "batch": 16,
-    "rect": True,
+    # "rect": True,
     "patience": 10,
     "project": "pole_detection",
 }
 
 hyper_params = {
-    "epochs": 1,
+    "weight_decay": 0.0005,
+    "epochs": 100,
     "optimizer": "AdamW",
-    "lr0": 0.01,
+    "lr0": 0.01117,
+    "momentum": 0.86731,
+    "warmup_epochs": 5.0,
     "lrf": 0.0001,
-    "momentum": 0.937,
-    "warmup_epochs": 5,
     "dropout": 0.1,
 }
 
 # Define augmentation parameters
 augmentation_params = {
     "augment": True,  # Enable data augmentation
-    "hsv_h": 0.015,  # HSV-Hue augmentation
-    "hsv_s": 0.7,  # HSV-Saturation augmentation
-    "hsv_v": 0.4,  # HSV-Value augmentation
+    "hsv_h": 0.01702,  # HSV-Hue augmentation
+    "hsv_s": 0.7131,  # HSV-Saturation augmentation
+    "hsv_v": 0.42673,  # HSV-Value augmentation
     "degrees": 0.0,  # Rotation augmentation
-    "translate": 0.1,  # Translation augmentation
-    "scale": 0.5,  # Scale augmentation
+    "translate": 0.09982,  # Translation augmentation
+    "scale": 0.50072,  # Scale augmentation
     "shear": 0.0,  # Shear augmentation
-    "perspective": 0.0,  # Perspective augmentation
+    "perspective": 0.00,  # Perspective augmentation
     "flipud": 0.0,  # Vertical flip augmentation
-    "fliplr": 0.5,  # Horizontal flip augmentation
-    "mosaic": 1.0,  # Mosaic augmentation
+    "fliplr": 0.35743,  # Horizontal flip augmentation
+    "mosaic": 0.90831,  # Mosaic augmentation
     "mixup": 0.0,  # Mixup augmentation
     "copy_paste": 0.0,  # Copy-paste augmentation
     "erasing": 0.0,  # Random erasing augmentation
-    "crop_fraction": 0.5,  # Crop fraction
+    "crop_fraction": 0.0,  # Crop fraction
 }
 
 # Combine all parameters
@@ -56,36 +60,19 @@ train_params.update(augmentation_params)
 
 # Perform hyperparameter tuning
 # https://docs.ultralytics.com/guides/hyperparameter-tuning/#repeat
-tuning_results = model.tune(
+results = model.train(
     **train_params,
-    iterations=1,  # Number of tuning iterations
     save=True,  # Disable saving intermediate models
-    val=False,  # Disable validation during tuning
+    val=True,  # Disable validation during tuning
+    device=device,
 )
-
-# Train the model with the best hyperparameters found
-best_hyperparams = tuning_results["best_hyperparameters"]
-
-print("Best hyperparameters found:")
-print(best_hyperparams)
-
-train_params.update(best_hyperparams)
-
-train_params["epochs"] = 100  # Increase the number of epochs
-train_params["val"] = True
-
-# Perform training
-results = model.train(**train_params)
-
+print("Results: ", results)
 # Save the trained model
-model.save("yolo_trained.pt")
-
-print("Training completed successfully.")
-
-# Upload the trained model to Hugging Face
-upload_yolo_to_huggingface(
-    repo_name="tdt17_yolo_pole_detection",
-    model_path="yolo_trained.pt",
-    hf_token="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",
-    private=False,
+model_path = model.export(
+    format="onnx",
+    device="cpu",
+    imgsz=864,
 )
+
+print(f"Model saved to {model_path}")
+print("Training completed successfully.")

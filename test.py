@@ -9,10 +9,10 @@ environ["TORCH_USE_CUDA_DSA"] = "1"
 
 
 # Load the model
-model = YOLO('yolov9c_trained.pt')
+model = YOLO(model='pole_detection\\train66\\weights\\best.pt')
 
 # Load the image
-img_path = 'C:\\Users\\Yauhen\\tdt17\\img.jpg'
+img_path = 'C:\\Users\\Yauhen\\tdt17\data\\Poles\\test\\images\\combined_image_5_png.rf.9372598b5abf9cfff473ec530fdbf7be.jpg'
 img = cv2.imread(img_path)
 
 # Run inference
@@ -25,7 +25,3 @@ annotated_img = results[0].plot()
 cv2.imshow('Detections', annotated_img)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
-# Optional: Save the annotated image
-save_path = 'C:\\Users\\Yauhen\\vortex-image-processing\\runs\\detect\\predict\\output_with_detections.jpg'
-cv2.imwrite(save_path, annotated_img)
